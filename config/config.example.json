@@ -1,0 +1,8 @@
+{
+  "email": {
+    "recipient": "midzic.mak@erczipo.ba",
+    "sender": "",
+    "smtp_host": "",
+    "smtp_port": 587
+  }
+}
