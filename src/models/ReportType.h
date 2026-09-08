@@ -1,0 +1,10 @@
+#pragma once
+
+enum class ReportType
+{
+    FZ_MIOPIO_SARAJEVO,
+    FZ_MIOPIO_MOSTAR,
+    ZAPISNIK_BPRV,
+    HALCOM_REPORT,
+    CBBH_INFRASTRUCTURE_REPORT
+};

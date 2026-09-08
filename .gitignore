@@ -1,0 +1,10 @@
+# CMake build folder
+build/
+
+# Compiled files
+*.exe
+*.obj
+*.o
+
+# VS Code local settings
+.vscode/
