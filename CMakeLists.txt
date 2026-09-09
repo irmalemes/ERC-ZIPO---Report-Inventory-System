@@ -12,6 +12,7 @@ add_executable(report_inventory
     src/ReportInventory.cpp
     src/models/Report.cpp
     src/FileManager.cpp
+    src/parser/ReportParser.cpp
 )
 
 # Milestone 02 testovi
@@ -25,6 +26,13 @@ add_executable(report_tests
 add_executable(file_manager_tests
     tests/FileManagerTests.cpp
     src/FileManager.cpp
+)
+
+# Milestone 04 testovi
+add_executable(report_parser_tests
+    tests/ReportParserTests.cpp
+    src/parser/ReportParser.cpp
+    src/models/Report.cpp
 )
 
 # Qt/SQLite integration will be added in later milestones.

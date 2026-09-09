@@ -4,13 +4,14 @@
 
 #include "ReportInventory.h"
 #include "FileManager.h"
+#include "parser/ReportParser.h"
 
 int main()
 {
     std::cout << "=== Report Inventory System ===\n\n";
 
     // =====================================================
-    // MILESTONE 02 - REPORT INVENTORY
+    // REPORT INVENTORY
     // =====================================================
 
     ReportInventory inventory;
@@ -124,10 +125,10 @@ int main()
 
 
     // =====================================================
-    // MILESTONE 03 - FILE MANAGER
+    //  FILE MANAGER
     // =====================================================
 
-    std::cout << "\n=== Milestone 03 - File Manager ===\n\n";
+    std::cout << "\n=== File Manager ===\n\n";
 
     FileManager fileManager;
 
@@ -248,6 +249,66 @@ int main()
 
     std::cout
         << "\nFileManager demonstracija zavrsena.\n";
+
+    // =====================================================
+    //  REPORT PARSER
+    // =====================================================
+
+    std::cout << "\n=== Report Parser ===\n\n";
+
+    ReportParser parser;
+
+    std::string parserTestFilename =
+        "Izvjestaj FZ MIOPIO SARAJEVO 12.09.2026.pdf";
+
+    auto parsedReport =
+        parser.parseFilename(parserTestFilename);
+
+    if(parsedReport.has_value()){
+
+        std::cout << "Naziv fajla: "
+                << parsedReport->getFilename()
+                << "\n";
+
+        std::cout << "Datum izvjestaja: "
+                << parsedReport->getReportDate()
+                << "\n";
+
+        std::cout << "Izvjestaj je uspjesno prepoznat.\n";
+    }
+    else{
+
+    std::cout << "UNKNOWN REPORT\n";
+    std::cout << "Odaberite kategoriju:\n";
+    std::cout << "1 - PIO/MIO\n";
+    std::cout << "2 - CBBH\n";
+    std::cout << "3 - HALCOM\n";
+
+    int izbor;
+    std::cout << "Izbor: ";
+    std::cin >> izbor;
+
+    switch(izbor){
+
+        case 1:
+            std::cout << "Odabrana kategorija: PIO/MIO\n";
+            break;
+
+        case 2:
+            std::cout << "Odabrana kategorija: CBBH\n";
+            break;
+
+        case 3:
+            std::cout << "Odabrana kategorija: HALCOM\n";
+            break;
+
+        default:
+            std::cout << "Neispravan izbor kategorije.\n";
+            break;
+    }
+}
+
+    std::cout << "\nReportParser demonstracija zavrsena.\n";    
 
     return 0;
 }
