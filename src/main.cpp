@@ -278,8 +278,35 @@ int main()
     }
     else{
 
-        std::cout << "UNKNOWN REPORT\n";
+    std::cout << "UNKNOWN REPORT\n";
+    std::cout << "Odaberite kategoriju:\n";
+    std::cout << "1 - PIO/MIO\n";
+    std::cout << "2 - CBBH\n";
+    std::cout << "3 - HALCOM\n";
+
+    int izbor;
+    std::cout << "Izbor: ";
+    std::cin >> izbor;
+
+    switch(izbor){
+
+        case 1:
+            std::cout << "Odabrana kategorija: PIO/MIO\n";
+            break;
+
+        case 2:
+            std::cout << "Odabrana kategorija: CBBH\n";
+            break;
+
+        case 3:
+            std::cout << "Odabrana kategorija: HALCOM\n";
+            break;
+
+        default:
+            std::cout << "Neispravan izbor kategorije.\n";
+            break;
     }
+}
 
     std::cout << "\nReportParser demonstracija zavrsena.\n";    
 
