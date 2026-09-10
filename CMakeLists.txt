@@ -1,10 +1,18 @@
 cmake_minimum_required(VERSION 3.20)
 
-project(ReportInventorySystem LANGUAGES CXX)
+project(ReportInventorySystem LANGUAGES C CXX)
 
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
+
+add_library(sqlite3 STATIC
+    libs/sqlite/sqlite3.c
+)
+
+target_include_directories(sqlite3 PUBLIC
+    libs/sqlite
+)
 
 # Glavna aplikacija
 add_executable(report_inventory
@@ -13,7 +21,10 @@ add_executable(report_inventory
     src/models/Report.cpp
     src/FileManager.cpp
     src/parser/ReportParser.cpp
+    src/database/DatabaseManager.cpp
 )
+
+target_link_libraries(report_inventory PRIVATE sqlite3)
 
 # Milestone 02 testovi
 add_executable(report_tests
@@ -34,5 +45,13 @@ add_executable(report_parser_tests
     src/parser/ReportParser.cpp
     src/models/Report.cpp
 )
+
+add_executable(database_tests
+    tests/DatabaseManagerTests.cpp
+    src/database/DatabaseManager.cpp
+    src/models/Report.cpp
+)
+
+target_link_libraries(database_tests PRIVATE sqlite3)
 
 # Qt/SQLite integration will be added in later milestones.

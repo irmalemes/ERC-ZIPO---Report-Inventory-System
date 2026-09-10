@@ -8,3 +8,12 @@ build/
 
 # VS Code local settings
 .vscode/
+
+# SQLite database files
+data/*.db
+data/*.db-journal
+data/*.db-wal
+data/*.db-shm
+
+# Test database files
+test_data/

@@ -9,7 +9,8 @@ Report::Report(
     long long fileSize,
     const std::string& filePath
 )
-    : filename(filename),
+    : id(0),
+      filename(filename),
       category(category),
       reportType(reportType),
       reportDate(reportDate),
@@ -17,6 +18,17 @@ Report::Report(
       fileSize(fileSize),
       filePath(filePath)
 {
+}
+
+int Report::getId() const{
+    
+    return id;
+}
+
+void Report::setId(int id){
+
+    this->id = id;
+
 }
 
 std::string Report::getFilename() const

@@ -6,6 +6,8 @@
 #include "FileManager.h"
 #include "parser/ReportParser.h"
 
+#include "database/DatabaseManager.h"
+
 int main()
 {
     std::cout << "=== Report Inventory System ===\n\n";
@@ -308,7 +310,125 @@ int main()
     }
 }
 
-    std::cout << "\nReportParser demonstracija zavrsena.\n";    
+    std::cout << "\nReportParser demonstracija zavrsena.\n";   
+    
+    
+    DatabaseManager database("data/report_inventory.db");
+
+if(database.open()){
+
+    std::cout << "Baza uspjesno otvorena.\n";
+
+    if(database.createReportsTable()){
+
+        std::cout << "Tabela reports je spremna.\n";
+
+        Report databaseTestReport(
+            "Izvjestaj FZ MIOPIO SARAJEVO 12.09.2026.pdf",
+            ReportCategory::PIO_MIO,
+            ReportType::FZ_MIOPIO_SARAJEVO,
+            "12.09.2026",
+            "10.09.2026",
+            2048,
+            "reports/PIO_MIO/Izvjestaj FZ MIOPIO SARAJEVO 12.09.2026.pdf"
+        );
+
+        if(database.insertReport(databaseTestReport)){
+
+            std::cout << "Izvjestaj uspjesno spremljen u bazu.\n";
+
+        } else{
+
+            std::cout << "Izvjestaj nije spremljen u bazu.\n";
+        }
+    }
+
+
+    std::vector<Report> reports = database.getAllReports();
+    if(!reports.empty()){
+
+    Report reportToUpdate = reports[0];
+
+    Report updatedReport(
+        "Izvjestaj FZ MIOPIO SARAJEVO 15.09.2026.pdf",
+        reportToUpdate.getCategory(),
+        reportToUpdate.getReportType(),
+        "15.09.2026",
+        reportToUpdate.getUploadDate(),
+        4096,
+        "reports/PIO_MIO/Izvjestaj FZ MIOPIO SARAJEVO 15.09.2026.pdf"
+    );
+
+    updatedReport.setId(reportToUpdate.getId());
+
+    if(database.updateReport(updatedReport)){
+
+        std::cout << "Izvjestaj uspjesno azuriran.\n";
+
+    } else{
+
+        std::cout << "Azuriranje izvjestaja nije uspjelo.\n";
+    }
+}
+
+reports = database.getAllReports();
+
+if(!reports.empty()){
+
+    int idToDelete = reports.back().getId();
+
+    if(database.deleteReport(idToDelete)){
+
+        std::cout << "Izvjestaj sa ID "
+                  << idToDelete
+                  << " uspjesno obrisan.\n";
+
+    } else{
+
+        std::cout << "Brisanje izvjestaja nije uspjelo.\n";
+    }
+}
+
+reports = database.getAllReports();
+
+std::cout << "\nPretraga baze po nazivu:\n";
+
+std::vector<Report> searchResults =
+    database.searchByFilename("15.09");
+
+for(const Report &report : searchResults){
+
+    std::cout << "Pronadjen ID: " << report.getId() << "\n";
+    std::cout << "Filename: " << report.getFilename() << "\n";
+}
+
+std::cout << "\nFilter baze po kategoriji PIO_MIO:\n";
+
+std::vector<Report> filteredReports =
+    database.filterByCategory(ReportCategory::PIO_MIO);
+
+for(const Report &report : filteredReports){
+
+    std::cout << "ID: " << report.getId() << "\n";
+    std::cout << "Filename: " << report.getFilename() << "\n";
+}
+
+std::cout << "\nIzvjestaji iz baze:\n";
+
+for(const Report &report : reports){
+
+    std::cout << "ID: " << report.getId() << "\n";
+    std::cout << "Filename: " << report.getFilename() << "\n";
+    std::cout << "Datum: " << report.getReportDate() << "\n";
+    std::cout << "Velicina: " << report.getFileSize() << "\n";
+    std::cout << "Putanja: " << report.getFilePath() << "\n";
+    std::cout << "-------------------------\n";
+}
+
+    database.close();
+}
+
+
 
     return 0;
 }

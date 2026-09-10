@@ -7,6 +7,7 @@
 class Report
 {
 private:
+    int id;
     std::string filename;
     ReportCategory category;
     ReportType reportType;
@@ -26,6 +27,9 @@ public:
         const std::string& filePath
     );
 
+
+    int getId() const;
+    void setId(int id);
     std::string getFilename() const;
     ReportCategory getCategory() const;
     ReportType getReportType() const;
