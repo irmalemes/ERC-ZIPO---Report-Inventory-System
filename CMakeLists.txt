@@ -2,6 +2,10 @@ cmake_minimum_required(VERSION 3.20)
 
 project(ReportInventorySystem LANGUAGES C CXX)
 
+find_package(Qt6 REQUIRED COMPONENTS Widgets)
+
+qt_standard_project_setup()
+
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
@@ -22,9 +26,13 @@ add_executable(report_inventory
     src/FileManager.cpp
     src/parser/ReportParser.cpp
     src/database/DatabaseManager.cpp
+    src/gui/MainWindow.cpp
 )
 
-target_link_libraries(report_inventory PRIVATE sqlite3)
+target_link_libraries(report_inventory PRIVATE
+    sqlite3
+    Qt6::Widgets
+)
 
 # Milestone 02 testovi
 add_executable(report_tests
@@ -54,4 +62,3 @@ add_executable(database_tests
 
 target_link_libraries(database_tests PRIVATE sqlite3)
 
-# Qt/SQLite integration will be added in later milestones.
