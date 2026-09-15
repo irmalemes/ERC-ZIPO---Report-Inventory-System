@@ -1,5 +1,6 @@
 #include "MainWindow.h"
 
+#include <filesystem>
 #include <QWidget>
 #include <QVBoxLayout>
 #include <QHBoxLayout>
@@ -12,9 +13,13 @@
 #include <QTableWidgetItem>
 #include <QAbstractItemView>
 #include <QFont>
+#include <QFileDialog>
+#include <QMessageBox>
+#include <QInputDialog>
+#include <QDate>
 
 
-MainWindow::MainWindow(QWidget *parent):QMainWindow(parent), database("data/report_inventory.db") {
+MainWindow::MainWindow(QWidget *parent):QMainWindow(parent), database("data/report_inventory.db"), uploadManager(database) {
 
     setWindowTitle("Report Inventory System");
     resize(1000, 600);
@@ -65,6 +70,7 @@ MainWindow::MainWindow(QWidget *parent):QMainWindow(parent), database("data/repo
 
 
     addReportButton = new QPushButton("Dodaj izvjestaj");
+    connect(addReportButton, &QPushButton::clicked, this, &MainWindow::addReport);
 
     searchLineEdit -> setMinimumHeight(36);
     categoryComboBox -> setMinimumHeight(36);
@@ -203,6 +209,133 @@ void MainWindow::displayReports(const std::vector<Report>&reports){
     }
 
     reportCountLabel -> setText("Prikazano izvjestaja: " + QString::number(reports.size()));
+}
+
+
+void MainWindow::addReport(){
+
+    QString filePath = QFileDialog::getOpenFileName(this, "Odaberi izvjestaj", "", "Izvjestaji (*.pdf *.docx)");
+
+    if(filePath.isEmpty()){
+        return;
+    }
+
+    if(!uploadManager.isValidFile(filePath.toStdString())) {
+
+        QMessageBox::warning(this, "Neispravan fajl", "Odabrani fajl nije validan PDF ili DOCX dokument!");
+
+        return;
+    }
+
+    std::optional<Report>parsedReport = uploadManager.parseReport(filePath.toStdString());
+
+    if(!parsedReport.has_value()) {
+
+        QStringList categories = { "PIO/MIO", "CBBH", "HALCOM" };
+        bool ok;
+
+        QString selectedCategory = QInputDialog::getItem(this, "Odabir kategorije", "Naziv izvjestaja nije prepoznat.\n"
+            "Odaberi kategoriju:", categories, 0, false, &ok);
+
+        
+        if(!ok) {
+            return;
+        }
+
+        QStringList reportTypes;
+
+        if(selectedCategory == "PIO/MIO"){
+            
+            reportTypes = { "FZ MIOPIO SARAJEVO", "FZ MIOPIO MOSTAR"};
+
+        }
+
+        else if(selectedCategory == "CBBH") {
+
+            reportTypes = { "ZAPISNIK BPRV"};
+
+        }
+
+        else if(selectedCategory == "HALCOM") {
+
+            reportTypes = { "HALCOM REPORT", "CBBH INFRASTRUCTURE REPORT"};
+        }
+
+        QString selectedType = QInputDialog::getItem(this, "Odabir tipa", "Odaberi tip izvjestaja:", reportTypes, 0, false, &ok);
+
+        if(!ok){
+            return;
+        }
+
+        QString reportDate = QInputDialog::getText(this, "Datum izvjestaja", "Unesi datum izvjestaja (dd.mm.yyyy):", QLineEdit::Normal, "", &ok);
+        
+        if(!ok || reportDate.isEmpty()) {
+            return;
+        }
+
+        QDate validDate = QDate::fromString(reportDate, "dd.MM.yyyy");
+
+        if(!validDate.isValid()) {
+            QMessageBox::warning(this, "Neispravan datum", "Datum mora biti ispravan i u formatu dd.mm.yyyy.");
+            return;
+        }
+
+        ReportCategory category;
+
+        if(selectedCategory == "PIO/MIO"){
+            category = ReportCategory::PIO_MIO;
+        }
+
+        else if(selectedCategory == "CBBH"){
+            category = ReportCategory::CBBH;
+        }
+
+        else {
+            category = ReportCategory::HALCOM;
+        }
+
+        ReportType reportType;
+
+        if(selectedType == "FZ MIOPIO SARAJEVO"){
+            reportType = ReportType::FZ_MIOPIO_SARAJEVO;
+        }
+
+        else if(selectedType == "FZ MIOPIO MOSTAR"){
+            reportType = ReportType::FZ_MIOPIO_MOSTAR;
+        }
+
+        else if(selectedType == "ZAPISNIK BPRV"){
+            reportType = ReportType::ZAPISNIK_BPRV;
+        }
+
+        else if(selectedType == "HALCOM REPORT"){
+            reportType = ReportType::HALCOM_REPORT;
+        }
+
+        else {
+            reportType = ReportType::CBBH_INFRASTRUCTURE_REPORT;
+        }
+
+        std::string filename = std::filesystem::path(filePath.toStdString()).filename().string();
+        std::string uploadDate = QDate::currentDate().toString("dd.MM.yyyy").toStdString();
+
+        Report manualReport(filename, category, reportType, reportDate.toStdString(), uploadDate, 0, filePath.toStdString());
+        parsedReport = manualReport;
+    }
+
+    Report report = parsedReport.value();
+    report.setFilePath(filePath.toStdString());
+
+    if(!uploadManager.uploadReport(report)) {
+
+        QMessageBox::warning(this, "Greska", "Izvjestaj nije moguce dodati. Moguce je da izvjestaj vec postoji.");
+        return;
+    }
+
+    loadReports();
+    QMessageBox::information(this, "Uspjesan upload", "Izvjestaj je uspjesno dodan");
+
+
 }
 
 void MainWindow::applyTheme(){

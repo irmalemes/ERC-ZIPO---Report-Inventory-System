@@ -65,3 +65,15 @@ std::string Report::getFilePath() const
 {
     return filePath;
 }
+
+void Report::setFilePath(const std::string &filePath) {
+
+    this -> filePath = filePath;
+
+}
+
+void Report::setFileSize(long long fileSize){
+
+    this -> fileSize = fileSize;
+}
+
