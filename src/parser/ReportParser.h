@@ -20,3 +20,4 @@ class ReportParser {
         std::string extractYyyyMmDdDate(const std::string &filename) const;
 
 };
+

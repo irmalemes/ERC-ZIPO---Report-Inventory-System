@@ -27,6 +27,7 @@ add_executable(report_inventory
     src/parser/ReportParser.cpp
     src/database/DatabaseManager.cpp
     src/gui/MainWindow.cpp
+    src/upload/UploadManager.cpp
 )
 
 target_link_libraries(report_inventory PRIVATE
@@ -61,4 +62,17 @@ add_executable(database_tests
 )
 
 target_link_libraries(database_tests PRIVATE sqlite3)
+
+add_executable(upload_manager_tests
+    tests/UploadManagerTests.cpp
+    src/models/Report.cpp
+    src/FileManager.cpp
+    src/parser/ReportParser.cpp
+    src/database/DatabaseManager.cpp
+    src/upload/UploadManager.cpp
+)
+
+target_link_libraries(upload_manager_tests PRIVATE
+    sqlite3
+)
 

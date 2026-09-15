@@ -37,4 +37,6 @@ public:
     std::string getUploadDate() const;
     long long getFileSize() const;
     std::string getFilePath() const;
+    void setFilePath(const std::string &filePath);
+    void setFileSize(long long fileSize);
 };

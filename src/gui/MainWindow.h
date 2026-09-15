@@ -3,6 +3,9 @@
 #include <QMainWindow>
 #include <vector>
 #include "../database/DatabaseManager.h"
+#include "../upload/UploadManager.h"
+
+
 
 
 class QPushButton;
@@ -26,10 +29,13 @@ class MainWindow : public QMainWindow {
         QPushButton *themeButton;
         bool darkTheme = true;
 
+
         DatabaseManager database;
+        UploadManager uploadManager;
         void loadReports();
         void searchReports();
         void filterReports();
         void displayReports(const std::vector<Report>&reports);
         void applyTheme();
+        void addReport();
 };
