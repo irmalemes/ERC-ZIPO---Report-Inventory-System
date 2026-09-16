@@ -28,6 +28,7 @@ add_executable(report_inventory
     src/database/DatabaseManager.cpp
     src/gui/MainWindow.cpp
     src/upload/UploadManager.cpp
+    src/calendar/ReportCalendar.cpp
 )
 
 target_link_libraries(report_inventory PRIVATE

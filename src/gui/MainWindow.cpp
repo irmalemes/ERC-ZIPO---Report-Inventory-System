@@ -62,6 +62,37 @@ MainWindow::MainWindow(QWidget *parent):QMainWindow(parent), database("data/repo
     categoryComboBox -> addItem("HALCOM");
     connect(categoryComboBox, &QComboBox::currentTextChanged, this, &MainWindow::filterReports);
 
+
+    periodComboBox = new QComboBox();
+    periodComboBox -> addItem("01 - 15");
+    periodComboBox -> addItem("16 - kraj mjeseca");
+
+    monthComboBox = new QComboBox();
+    monthComboBox -> addItems({
+        "Januar",
+        "Februar",
+        "Mart",
+        "April",
+        "Maj",
+        "Juni",
+        "Juli",
+        "August",
+        "Septembar",
+        "Oktobar",
+        "Novembar",
+        "Decembar"
+    });
+
+    monthComboBox -> setCurrentIndex(QDate::currentDate().month()-1);
+
+    periodOverviewButton = new QPushButton("Pregled perioda");
+    connect(periodOverviewButton, &QPushButton::clicked, this, MainWindow::showPeriodOverview);
+
+
+    yearSpinBox = new QSpinBox();
+    yearSpinBox -> setRange(2020, 2100);
+    yearSpinBox -> setValue(QDate::currentDate().year());
+
     themeButton = new QPushButton("Light");
     connect(themeButton, &QPushButton::clicked, this, [this](){
         darkTheme = !darkTheme;
@@ -85,6 +116,10 @@ MainWindow::MainWindow(QWidget *parent):QMainWindow(parent), database("data/repo
     controlLayout -> addWidget(categoryComboBox);
     controlLayout -> addWidget(themeButton);
     controlLayout -> addWidget(addReportButton);
+    controlLayout -> addWidget(periodComboBox);
+    controlLayout -> addWidget(monthComboBox);
+    controlLayout -> addWidget(yearSpinBox);
+    controlLayout -> addWidget(periodOverviewButton);
 
     mainLayout -> addLayout(controlLayout);
 
@@ -109,6 +144,15 @@ MainWindow::MainWindow(QWidget *parent):QMainWindow(parent), database("data/repo
 
 
     mainLayout -> addWidget(reportTable);
+
+
+    periodTable = new QTableWidget();
+    periodTable -> setColumnCount(3);
+    periodTable -> setHorizontalHeaderLabels({"Kategorija", "Tip izvjestaja", "Status"});
+    periodTable -> horizontalHeader() -> setStretchLastSection(true);
+    periodTable -> setEditTriggers(QAbstractItemView::NoEditTriggers);
+    mainLayout -> addWidget(periodTable);
+
 
     reportCountLabel = new QLabel("Prikazano izvjestaja: 0");
     mainLayout -> addWidget(reportCountLabel);
@@ -337,6 +381,46 @@ void MainWindow::addReport(){
 
 
 }
+
+void MainWindow::showPeriodOverview() {
+    
+    int month = monthComboBox -> currentIndex() + 1;
+    int year = yearSpinBox -> value();
+
+    ReportPeriod period;
+
+    if(periodComboBox -> currentIndex() == 0) {
+        period = ReportPeriod::FIRST_HALF;
+    } else {
+        period = ReportPeriod::SECOND_HALF;
+    }
+
+    std::vector<Report>reports = database.getAllReports();
+    ReportPeriodResult result = reportCalendar.analyzePeriod(reports, period, month, year);
+
+    QString overview;
+    overview += "Ocekivano: " + QString::number(result.expectedReports) + "\n";
+    overview += "Primljeno: " + QString::number(result.receivedReports) + "\n";
+    overview += "Nedostaje: " + QString::number(result.missingReports) + "\n";
+    overview += "Zavrseno: " + QString::number(result.completionPercentage, 'f', 0) + "%\n";
+    overview += "Status: " + QString::fromStdString(reportCalendar.getStatusName(result.status));
+
+    if(!result.missingReportTypes.empty()) {
+        
+        overview += "\n\nNedostajuci izvjestaji:\n";
+
+        for(ReportType reportType : result.missingReportTypes) {
+            ReportCategory category = reportCalendar.getCategoryForType(reportType);
+            overview += "- " + QString::fromStdString(reportCalendar.getCategoryName(category)) + " | " + QString::fromStdString(reportCalendar.getReportTypeName(reportType)) + "\n";     
+        }
+    }
+
+    QMessageBox::information(this, "Pregled perioda", overview);
+
+
+}
+
+
 
 void MainWindow::applyTheme(){
 
