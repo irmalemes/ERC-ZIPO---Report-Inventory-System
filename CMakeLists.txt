@@ -28,6 +28,7 @@ add_executable(report_inventory
     src/database/DatabaseManager.cpp
     src/gui/MainWindow.cpp
     src/upload/UploadManager.cpp
+    src/calendar/ReportCalendar.cpp
 )
 
 target_link_libraries(report_inventory PRIVATE
@@ -74,5 +75,11 @@ add_executable(upload_manager_tests
 
 target_link_libraries(upload_manager_tests PRIVATE
     sqlite3
+)
+
+add_executable(report_calendar_tests
+    tests/ReportCalendarTests.cpp
+    src/models/Report.cpp
+    src/calendar/ReportCalendar.cpp
 )
 

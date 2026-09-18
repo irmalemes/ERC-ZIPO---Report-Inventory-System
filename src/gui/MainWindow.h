@@ -1,9 +1,13 @@
 #pragma once
 
 #include <QMainWindow>
+#include <QComboBox>
+#include <QSpinBox>
+#include <QLabel>
 #include <vector>
 #include "../database/DatabaseManager.h"
 #include "../upload/UploadManager.h"
+#include "../calendar/ReportCalendar.h"
 
 
 
@@ -28,14 +32,22 @@ class MainWindow : public QMainWindow {
         QLabel *reportCountLabel;
         QPushButton *themeButton;
         bool darkTheme = true;
+        QComboBox *periodComboBox;
+        QComboBox *monthComboBox;
+        QSpinBox *yearSpinBox;
+        QPushButton *periodOverviewButton; 
+        QTableWidget *periodTable;
+        QLabel *periodSummaryLabel;
 
 
         DatabaseManager database;
         UploadManager uploadManager;
+        ReportCalendar reportCalendar;
         void loadReports();
         void searchReports();
         void filterReports();
         void displayReports(const std::vector<Report>&reports);
         void applyTheme();
         void addReport();
+        void showPeriodOverview();
 };
