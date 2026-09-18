@@ -1,4 +1,5 @@
 #include "ReportCalendar.h"
+#include <stdexcept>
 
 ReportCalendar::ReportCalendar() {
 
@@ -102,17 +103,30 @@ ReportPeriod ReportCalendar::getReportPeriod(int day) const {
 
 int ReportCalendar::getDayFromDate(const std::string &date) const {
     if(date.size() < 2) return 0;
-    return std::stoi(date.substr(0, 2));
+    try {
+       return std::stoi(date.substr(0, 2));
+    } catch(const std::exception &error) {
+        return 0;
+    }   
 }
 
 int ReportCalendar::getMonthFromDate(const std::string &date) const {
     if(date.size() < 5) return 0;
-    return std::stoi(date.substr(3, 2));
+    try {
+        return std::stoi(date.substr(3, 2));
+    } catch(const std::exception &error) {
+        return 0;
+    }
 }
 
 int ReportCalendar::getYearFromDate(const std::string &date) const {
     if(date.size() < 10) return 0;
-    return std::stoi(date.substr(6, 4));
+    try {
+        return std::stoi(date.substr(6, 4));
+    } catch(const std::exception &error) {
+        return 0;
+    }
+    
 }
 
 std::vector<Report>ReportCalendar::filterByPeriod(const std::vector<Report>&reports, ReportPeriod period, int month, int year) const {    
@@ -124,7 +138,7 @@ std::vector<Report>ReportCalendar::filterByPeriod(const std::vector<Report>&repo
         int reportMonth = getMonthFromDate(report.getReportDate());
         int reportYear = getYearFromDate(report.getReportDate());
 
-        if(day==0 || reportMonth == 0 || reportYear == 0) continue;
+        if(day < 1 || day > 31 || reportMonth < 1 || reportMonth > 12 || reportYear<=0) continue;
 
         if(getReportPeriod(day) == period && reportMonth == month && reportYear == year) {
             filteredReports.push_back(report);

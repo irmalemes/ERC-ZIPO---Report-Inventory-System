@@ -3,6 +3,7 @@
 #include <QMainWindow>
 #include <QComboBox>
 #include <QSpinBox>
+#include <QLabel>
 #include <vector>
 #include "../database/DatabaseManager.h"
 #include "../upload/UploadManager.h"
@@ -36,6 +37,7 @@ class MainWindow : public QMainWindow {
         QSpinBox *yearSpinBox;
         QPushButton *periodOverviewButton; 
         QTableWidget *periodTable;
+        QLabel *periodSummaryLabel;
 
 
         DatabaseManager database;

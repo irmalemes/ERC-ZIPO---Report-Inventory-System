@@ -17,6 +17,7 @@
 #include <QMessageBox>
 #include <QInputDialog>
 #include <QDate>
+#include <QColor>
 
 
 MainWindow::MainWindow(QWidget *parent):QMainWindow(parent), database("data/report_inventory.db"), uploadManager(database) {
@@ -86,7 +87,7 @@ MainWindow::MainWindow(QWidget *parent):QMainWindow(parent), database("data/repo
     monthComboBox -> setCurrentIndex(QDate::currentDate().month()-1);
 
     periodOverviewButton = new QPushButton("Pregled perioda");
-    connect(periodOverviewButton, &QPushButton::clicked, this, MainWindow::showPeriodOverview);
+    connect(periodOverviewButton, &QPushButton::clicked, this, &MainWindow::showPeriodOverview);
 
 
     yearSpinBox = new QSpinBox();
@@ -149,13 +150,20 @@ MainWindow::MainWindow(QWidget *parent):QMainWindow(parent), database("data/repo
     periodTable = new QTableWidget();
     periodTable -> setColumnCount(3);
     periodTable -> setHorizontalHeaderLabels({"Kategorija", "Tip izvjestaja", "Status"});
+    periodTable -> horizontalHeader() -> setSectionResizeMode(QHeaderView::ResizeToContents);
     periodTable -> horizontalHeader() -> setStretchLastSection(true);
     periodTable -> setEditTriggers(QAbstractItemView::NoEditTriggers);
-    mainLayout -> addWidget(periodTable);
+    periodTable -> setSelectionBehavior(QAbstractItemView::SelectRows);
+    periodTable -> setAlternatingRowColors(true);
+
+
+    periodSummaryLabel = new QLabel("Odaberi period i klikni Pregled perioda.");
 
 
     reportCountLabel = new QLabel("Prikazano izvjestaja: 0");
     mainLayout -> addWidget(reportCountLabel);
+    mainLayout -> addWidget(periodSummaryLabel);
+    mainLayout -> addWidget(periodTable);
 
     applyTheme();
 
@@ -397,6 +405,68 @@ void MainWindow::showPeriodOverview() {
 
     std::vector<Report>reports = database.getAllReports();
     ReportPeriodResult result = reportCalendar.analyzePeriod(reports, period, month, year);
+
+    QString summaryText = 
+        "Ocekivano: " + QString::number(result.expectedReports) +
+        " | Primljeno: " + QString::number(result.receivedReports) + 
+        " | Nedostaje: " + QString::number(result.missingReports) +
+        " | Zavrseno: " + QString::number(result.completionPercentage, 'f', 0) + "%" +
+        " | Status: " + QString::fromStdString(
+                reportCalendar.getStatusName(result.status)
+        );
+
+
+    periodSummaryLabel -> setText(summaryText);
+
+
+    std::vector<ReportType>expectedTypes = reportCalendar.getExpectedReportTypes();
+    periodTable -> setRowCount(expectedTypes.size());
+
+    for(int i = 0; i < expectedTypes.size(); i++) {
+
+        ReportType reportType = expectedTypes[i];
+        ReportCategory category = reportCalendar.getCategoryForType(reportType);
+        bool missing = false;
+
+        for(ReportType missingType : result.missingReportTypes) {
+
+            if(reportType == missingType) {
+                missing = true;
+                break;
+            }
+        }
+
+
+        QString status;
+        if(missing) {
+            status = "MISSING";
+        } else {
+            status = "RECEIVED";
+        }
+
+
+        periodTable -> setItem(i, 0, new QTableWidgetItem(QString::fromStdString(reportCalendar.getCategoryName(category))));
+
+        periodTable -> setItem(i, 1, new QTableWidgetItem(QString::fromStdString(reportCalendar.getReportTypeName(reportType))));
+
+        QTableWidgetItem *statusItem = new QTableWidgetItem(status);
+
+        if(missing) {
+            statusItem -> setForeground(QColor("red"));
+        } else {
+            statusItem -> setForeground(QColor("green"));
+        }
+
+        periodTable -> setItem(i, 2, statusItem);
+
+    
+
+
+
+
+    }
+
+
 
     QString overview;
     overview += "Ocekivano: " + QString::number(result.expectedReports) + "\n";
