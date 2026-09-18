@@ -48,6 +48,21 @@ MainWindow::MainWindow(QWidget *parent):QMainWindow(parent), database("data/repo
     mainLayout -> addWidget(subtitleLabel);
 
 
+    reminderTitleLabel = new QLabel("PODSJETNICI");
+    QFont reminderTitleFont = reminderTitleLabel -> font();
+    reminderTitleFont.setPointSize(12);
+    reminderTitleFont.setBold(true);
+    reminderTitleLabel -> setFont(reminderTitleFont);
+    reminderDeadlineLabel = new QLabel("Sljedeci rok: -");
+    reminderStatusLabel = new QLabel("Status trenutnog perioda: -");
+    reminderMessageLabel = new QLabel("");
+    cbbhReminderLabel = new QLabel("");
+    QFont cbbhFont = cbbhReminderLabel -> font();
+    cbbhFont.setBold(true);
+    cbbhReminderLabel -> setFont(cbbhFont);
+    cbbhReminderLabel -> setStyleSheet("color: orange; font-weight: bold;");
+
+
 
     //Pretraga, kategorija i dodavanje izvjestaja
     QHBoxLayout *controlLayout = new QHBoxLayout();
@@ -165,6 +180,14 @@ MainWindow::MainWindow(QWidget *parent):QMainWindow(parent), database("data/repo
     mainLayout -> addWidget(periodSummaryLabel);
     mainLayout -> addWidget(periodTable);
 
+    //Reminder panel
+    mainLayout -> addWidget(reminderTitleLabel);
+    mainLayout -> addWidget(reminderDeadlineLabel);
+    mainLayout -> addWidget(reminderStatusLabel);
+    mainLayout -> addWidget(reminderMessageLabel);
+    mainLayout -> addWidget(cbbhReminderLabel);
+
+
     applyTheme();
 
     //baza podataka
@@ -172,6 +195,61 @@ MainWindow::MainWindow(QWidget *parent):QMainWindow(parent), database("data/repo
         database.createReportsTable();
         loadReports();
     }
+
+    updateReminderPanel();
+}
+
+
+void MainWindow::updateReminderPanel() {
+    QDate currentDate = QDate::currentDate();
+
+    int day = currentDate.day();
+    int month = currentDate.month();
+    int year = currentDate.year();
+    int daysInMonth = currentDate.daysInMonth();
+
+    reminderTitleLabel -> setText("PODSJETNICI - " + currentDate.toString("dd.MM.yyyy"));
+
+    ReportPeriod currentPeriod = reportCalendar.getReportPeriod(day);
+    std::vector<Report>reports = database.getAllReports();
+    ReportPeriodResult periodResult = reportCalendar.analyzePeriod(reports, currentPeriod, month, year);
+
+    ReminderResult reminder = reminderManager.createReminder(day, month, year, daysInMonth, periodResult);
+
+    reminderDeadlineLabel -> setText(
+        "Sljedeci rok: " +
+        QString::fromStdString(reminder.nextDeadline) +
+        " | Preostalo dana: " +
+        QString::number(reminder.daysRemaining)
+    );
+
+    reminderStatusLabel -> setText(
+        "Status trenutnog perioda: " +
+        QString::fromStdString(
+            reportCalendar.getStatusName(reminder.reportStatus)
+        ) +
+        " | Nedostaje: " +
+        QString::number(reminder.missingReports)
+    );
+
+    reminderMessageLabel -> setText(QString::fromStdString(reminder.message));
+
+    if(reminder.deadlinePassed && reminder.missingReports > 0){
+        reminderMessageLabel -> setStyleSheet(
+            "color: red; font-weight: bold;"
+        );
+    }
+    else{
+        reminderMessageLabel -> setStyleSheet("");
+    }
+
+    cbbhReminderLabel -> setText(QString::fromStdString(reminder.cbbhMessage));
+
+
+
+
+
+
 }
 
 
@@ -385,6 +463,7 @@ void MainWindow::addReport(){
     }
 
     loadReports();
+    updateReminderPanel();
     QMessageBox::information(this, "Uspjesan upload", "Izvjestaj je uspjesno dodan");
 
 

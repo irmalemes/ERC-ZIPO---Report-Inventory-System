@@ -29,6 +29,7 @@ add_executable(report_inventory
     src/gui/MainWindow.cpp
     src/upload/UploadManager.cpp
     src/calendar/ReportCalendar.cpp
+    src/reminders/ReminderManager.cpp
 )
 
 target_link_libraries(report_inventory PRIVATE
@@ -81,5 +82,13 @@ add_executable(report_calendar_tests
     tests/ReportCalendarTests.cpp
     src/models/Report.cpp
     src/calendar/ReportCalendar.cpp
+)
+
+# Milestone 09 testovi
+add_executable(reminder_manager_tests
+    tests/ReminderManagerTests.cpp
+    src/reminders/ReminderManager.cpp
+    src/calendar/ReportCalendar.cpp
+    src/models/Report.cpp
 )
 
