@@ -8,6 +8,7 @@
 #include "../database/DatabaseManager.h"
 #include "../upload/UploadManager.h"
 #include "../calendar/ReportCalendar.h"
+#include "../reminders/ReminderManager.h"
 
 
 
@@ -38,11 +39,17 @@ class MainWindow : public QMainWindow {
         QPushButton *periodOverviewButton; 
         QTableWidget *periodTable;
         QLabel *periodSummaryLabel;
+        QLabel *reminderTitleLabel;
+        QLabel *reminderDeadlineLabel;
+        QLabel *reminderStatusLabel;
+        QLabel *reminderMessageLabel;
+        QLabel *cbbhReminderLabel;
 
 
         DatabaseManager database;
         UploadManager uploadManager;
         ReportCalendar reportCalendar;
+        ReminderManager reminderManager;
         void loadReports();
         void searchReports();
         void filterReports();
@@ -50,4 +57,5 @@ class MainWindow : public QMainWindow {
         void applyTheme();
         void addReport();
         void showPeriodOverview();
+        void updateReminderPanel();
 };
