@@ -2,7 +2,7 @@ cmake_minimum_required(VERSION 3.20)
 
 project(ReportInventorySystem LANGUAGES C CXX)
 
-find_package(Qt6 REQUIRED COMPONENTS Widgets)
+find_package(Qt6 REQUIRED COMPONENTS Widgets Network)
 
 qt_standard_project_setup()
 
@@ -30,11 +30,14 @@ add_executable(report_inventory
     src/upload/UploadManager.cpp
     src/calendar/ReportCalendar.cpp
     src/reminders/ReminderManager.cpp
+    src/email/EmailManager.cpp
+    src/email/SmtpClient.cpp
 )
 
 target_link_libraries(report_inventory PRIVATE
     sqlite3
     Qt6::Widgets
+    Qt6::Network
 )
 
 # Milestone 02 testovi
