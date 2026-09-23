@@ -675,8 +675,16 @@ void MainWindow::openCbbhEmailForm() {
            return;
         }
 
+        if(smtpClient.sendEmail(email, config)) {
+            QMessageBox::information(&dialog, "Email poslan", "Email je uspjesno poslan.");
+        } else {
+            QMessageBox::warning(&dialog, "Greska pri slanju", "Email nije moguce poslati. Provjerite SMTP konfiguraciju.");
+        }
+
 
     });
+
+   
 
 
     dialog.exec();

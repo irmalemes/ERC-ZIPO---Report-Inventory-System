@@ -1,4 +1,4 @@
-#include "EmailManager.h";
+#include "EmailManager.h"
 #include <cstdlib>
 
 EmailManager::EmailManager() {
@@ -56,10 +56,18 @@ EmailConfig EmailManager::loadConfig() const {
     const char *sender = std::getenv("RIS_SMTP_FROM");
 
     config.smtpHost = host ? host : "";
-    config.smtpPort = port ? std::stoi(port) : 0;
+    config.smtpPort = 0;
     config.username = username ? username : "";
     config.password = password ? password : "";
     config.sender = sender ? sender : "";
+
+    if(port) {
+        try {
+            config.smtpPort = std::stoi(port);
+        } catch(...) {
+            config.smtpPort = 0;
+        }
+    }
 
     return config;
 }

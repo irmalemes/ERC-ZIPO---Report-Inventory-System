@@ -95,3 +95,9 @@ add_executable(reminder_manager_tests
     src/models/Report.cpp
 )
 
+# Milestone 10 testovi
+add_executable(email_manager_tests
+    tests/EmailManagerTests.cpp
+    src/email/EmailManager.cpp
+)
+
