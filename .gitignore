@@ -19,3 +19,6 @@ data/*.db-shm
 test_data/
 
 reports/
+
+build-release/
+dist/

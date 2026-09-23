@@ -18,6 +18,8 @@
 #include <QInputDialog>
 #include <QDate>
 #include <QColor>
+#include <QDialog>
+#include <QTextEdit>
 
 
 MainWindow::MainWindow(QWidget *parent):QMainWindow(parent), database("data/report_inventory.db"), uploadManager(database) {
@@ -119,6 +121,9 @@ MainWindow::MainWindow(QWidget *parent):QMainWindow(parent), database("data/repo
     addReportButton = new QPushButton("Dodaj izvjestaj");
     connect(addReportButton, &QPushButton::clicked, this, &MainWindow::addReport);
 
+    cbbhEmailButton = new QPushButton("CBBH email i najava");
+    connect(cbbhEmailButton, &QPushButton::clicked, this, &MainWindow::openCbbhEmailForm);
+
     searchLineEdit -> setMinimumHeight(36);
     categoryComboBox -> setMinimumHeight(36);
     addReportButton -> setMinimumHeight(36);
@@ -186,6 +191,7 @@ MainWindow::MainWindow(QWidget *parent):QMainWindow(parent), database("data/repo
     mainLayout -> addWidget(reminderStatusLabel);
     mainLayout -> addWidget(reminderMessageLabel);
     mainLayout -> addWidget(cbbhReminderLabel);
+    mainLayout -> addWidget(cbbhEmailButton);
 
 
     applyTheme();
@@ -565,6 +571,124 @@ void MainWindow::showPeriodOverview() {
     }
 
     QMessageBox::information(this, "Pregled perioda", overview);
+
+
+}
+
+void MainWindow::openCbbhEmailForm() {
+
+    QDialog dialog(this);
+
+    dialog.setWindowTitle("CBBH email najava");
+    dialog.setMinimumWidth(500);
+
+    QVBoxLayout *layout = new QVBoxLayout(&dialog);
+
+    QLabel *dateLabel = new QLabel("Datum:");
+
+    QLineEdit *dateEdit = new QLineEdit();
+    dateEdit -> setText(QDate::currentDate().toString("dd.MM.yyyy"));
+    dateEdit -> setReadOnly(true);
+
+    layout -> addWidget(dateLabel);
+    layout -> addWidget(dateEdit);
+
+    QLabel *recipientLabel = new QLabel("Primalac:");
+
+    QComboBox *recipientCombo = new QComboBox();
+    recipientCombo -> setEditable(true);
+    recipientCombo -> addItem("Unesi testnu email adresu");
+
+    layout -> addWidget(recipientLabel);
+    layout -> addWidget(recipientCombo);
+
+    QLabel *subjectLabel = new QLabel("Naslov:");
+
+    QLineEdit *subjectEdit = new QLineEdit();
+    subjectEdit -> setText("CBBH najava - " + dateEdit -> text());
+
+    layout -> addWidget(subjectLabel);
+    layout -> addWidget(subjectEdit);
+
+    QLabel *bodyLabel = new QLabel("Sadrzaj:");
+    QTextEdit *bodyEdit = new QTextEdit();
+    bodyEdit -> setPlainText(
+        "Postovani,\r\n"
+        "ovim putem dostavljamo najavu za Centralnu banku Bosne i Hercegovine.\n\n"
+        "Datum: " + dateEdit -> text() + "\n\n"
+        "Lijep pozdrav."
+    );
+
+    layout -> addWidget(bodyLabel);
+    layout -> addWidget(bodyEdit);
+
+    QPushButton *previewButton = new QPushButton("Pregled emaila");
+
+    QPushButton *sendButton = new QPushButton("Posalji email");
+
+    layout -> addWidget(previewButton);
+    layout -> addWidget(sendButton);
+    connect(previewButton, &QPushButton::clicked, [&](){
+
+        EmailData email;
+        email.recipient = recipientCombo -> currentText().toStdString();
+        email.subject = subjectEdit -> text().toStdString();
+        email.body = bodyEdit -> toPlainText().toStdString();
+        email.date = dateEdit -> text().toStdString();
+
+        if(!emailManager.isValidEmail(email.recipient)) {
+            QMessageBox::warning(&dialog, "Neispravna email adresa", "Unesite ispravnu email adresu primaoca.");
+            return;
+        }
+
+        std::string preview = emailManager.createPreview(email);
+        QMessageBox::information(&dialog, "Pregled emaila", QString::fromStdString(preview));
+        
+    });
+
+    connect(sendButton, &QPushButton::clicked, [&](){
+
+        EmailData email;
+        email.recipient = recipientCombo -> currentText().toStdString();
+        email.subject = subjectEdit -> text().toStdString();
+        email.body = bodyEdit -> toPlainText().toStdString();
+        email.date = dateEdit -> text().toStdString();
+
+        if(!emailManager.isValidEmail(email.recipient)) {
+            QMessageBox::warning(&dialog, "Neispravna email adresa", "Unesite ispravnu email adresu priamoca.");
+            return;
+        }
+
+        std::string preview = emailManager.createPreview(email);
+
+        QMessageBox::StandardButton confirmation = QMessageBox::question(&dialog, "Potvrda slanja", QString::fromStdString(preview) + "\n\nDa li ste sigurni da zelite poslati ovaj email?", 
+        QMessageBox::Yes | QMessageBox::No);
+
+        if(confirmation != QMessageBox::Yes) {
+            return;
+        }
+
+        EmailConfig config = emailManager.loadConfig();
+
+        if(!emailManager.isConfigValid(config)) {
+           QMessageBox::warning(&dialog, "SMTP konfiguracija", "SMTP konfiguracija nije potpuna.\n" "Provjerite environment variables prije slanja.");
+           return;
+        }
+
+        if(smtpClient.sendEmail(email, config)) {
+            QMessageBox::information(&dialog, "Email poslan", "Email je uspjesno poslan.");
+        } else {
+            QMessageBox::warning(&dialog, "Greska pri slanju", "Email nije moguce poslati. Provjerite SMTP konfiguraciju.");
+        }
+
+
+    });
+
+   
+
+
+    dialog.exec();
+
 
 
 }

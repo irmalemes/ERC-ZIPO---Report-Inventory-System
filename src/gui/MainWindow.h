@@ -9,6 +9,8 @@
 #include "../upload/UploadManager.h"
 #include "../calendar/ReportCalendar.h"
 #include "../reminders/ReminderManager.h"
+#include "../email/EmailManager.h"
+#include "../email/SmtpClient.h"
 
 
 
@@ -44,12 +46,15 @@ class MainWindow : public QMainWindow {
         QLabel *reminderStatusLabel;
         QLabel *reminderMessageLabel;
         QLabel *cbbhReminderLabel;
+        QPushButton *cbbhEmailButton;
 
 
         DatabaseManager database;
         UploadManager uploadManager;
         ReportCalendar reportCalendar;
         ReminderManager reminderManager;
+        EmailManager emailManager;
+        SmtpClient smtpClient;
         void loadReports();
         void searchReports();
         void filterReports();
@@ -58,4 +63,5 @@ class MainWindow : public QMainWindow {
         void addReport();
         void showPeriodOverview();
         void updateReminderPanel();
+        void openCbbhEmailForm();
 };
