@@ -20,6 +20,8 @@
 #include <QColor>
 #include <QDialog>
 #include <QTextEdit>
+#include <QScrollArea>
+#include <QFrame>
 
 
 MainWindow::MainWindow(QWidget *parent):QMainWindow(parent), database("data/report_inventory.db"), uploadManager(database) {
@@ -27,10 +29,15 @@ MainWindow::MainWindow(QWidget *parent):QMainWindow(parent), database("data/repo
     setWindowTitle("Report Inventory System");
     resize(1000, 600);
 
-    QWidget *centralWidget = new QWidget(this);
-    setCentralWidget(centralWidget);
+    QScrollArea *scrollArea = new QScrollArea(this);
+    scrollArea -> setWidgetResizable(true);
+    scrollArea -> setFrameShape(QFrame::NoFrame);
 
+    QWidget *centralWidget = new QWidget();
     QVBoxLayout *mainLayout = new QVBoxLayout(centralWidget);
+
+    scrollArea -> setWidget(centralWidget);
+    setCentralWidget(scrollArea);
 
     mainLayout -> setContentsMargins(20, 20, 20, 20);
     mainLayout -> setSpacing(12);
@@ -67,7 +74,8 @@ MainWindow::MainWindow(QWidget *parent):QMainWindow(parent), database("data/repo
 
 
     //Pretraga, kategorija i dodavanje izvjestaja
-    QHBoxLayout *controlLayout = new QHBoxLayout();
+    QHBoxLayout *reportControlLayout = new QHBoxLayout();
+    QHBoxLayout *periodControlLayout = new QHBoxLayout();
 
     searchLineEdit = new QLineEdit();
     searchLineEdit -> setPlaceholderText("Pretrazi izvjestaje...");
@@ -122,7 +130,11 @@ MainWindow::MainWindow(QWidget *parent):QMainWindow(parent), database("data/repo
     connect(addReportButton, &QPushButton::clicked, this, &MainWindow::addReport);
 
     cbbhEmailButton = new QPushButton("CBBH email i najava");
+    cbbhEmailButton -> setMinimumWidth(180);
+    cbbhEmailButton -> setMinimumHeight(220);
+    cbbhEmailButton -> setFixedHeight(36);
     connect(cbbhEmailButton, &QPushButton::clicked, this, &MainWindow::openCbbhEmailForm);
+
 
     searchLineEdit -> setMinimumHeight(36);
     categoryComboBox -> setMinimumHeight(36);
@@ -133,20 +145,37 @@ MainWindow::MainWindow(QWidget *parent):QMainWindow(parent), database("data/repo
     addReportButton -> setMinimumWidth(130);
     themeButton -> setMinimumWidth(80);
 
-    controlLayout -> addWidget(searchLineEdit);
-    controlLayout -> addWidget(categoryComboBox);
-    controlLayout -> addWidget(themeButton);
-    controlLayout -> addWidget(addReportButton);
-    controlLayout -> addWidget(periodComboBox);
-    controlLayout -> addWidget(monthComboBox);
-    controlLayout -> addWidget(yearSpinBox);
-    controlLayout -> addWidget(periodOverviewButton);
+    reportControlLayout -> addWidget(searchLineEdit);
+    reportControlLayout -> addWidget(categoryComboBox);
+    reportControlLayout -> addWidget(themeButton);
+    reportControlLayout -> addWidget(addReportButton);
 
-    mainLayout -> addLayout(controlLayout);
+    periodControlLayout -> addWidget(periodComboBox);
+    periodControlLayout -> addWidget(monthComboBox);
+    periodControlLayout -> addWidget(yearSpinBox);
+    periodControlLayout -> addWidget(periodOverviewButton);
+
+
+
+    QLabel *reportsSectionLabel = new QLabel("IZVJESTAJI");
+
+    QFont reportsSectionFont = reportsSectionLabel -> font();
+    reportsSectionFont.setPointSize(11);
+    reportsSectionFont.setBold(true);
+    reportsSectionLabel -> setFont(reportsSectionFont);
+
+    mainLayout -> addWidget(reportsSectionLabel);
+    mainLayout -> addLayout(reportControlLayout);
+
+
+
+
+
 
     //Tabela izvjestaja
     reportTable = new QTableWidget();
     reportTable -> setColumnCount(5);
+    reportTable -> setMinimumHeight(320);
 
     reportTable -> setHorizontalHeaderLabels({
         "Naziv fajla",
@@ -169,9 +198,14 @@ MainWindow::MainWindow(QWidget *parent):QMainWindow(parent), database("data/repo
 
     periodTable = new QTableWidget();
     periodTable -> setColumnCount(3);
+    periodTable -> setMinimumHeight(100);
     periodTable -> setHorizontalHeaderLabels({"Kategorija", "Tip izvjestaja", "Status"});
-    periodTable -> horizontalHeader() -> setSectionResizeMode(QHeaderView::ResizeToContents);
-    periodTable -> horizontalHeader() -> setStretchLastSection(true);
+
+    periodTable -> horizontalHeader() -> setSectionResizeMode(0, QHeaderView::ResizeToContents);
+    periodTable -> horizontalHeader() -> setSectionResizeMode(1, QHeaderView::Stretch);
+    periodTable -> horizontalHeader() -> setSectionResizeMode(2, QHeaderView::ResizeToContents);
+
+    
     periodTable -> setEditTriggers(QAbstractItemView::NoEditTriggers);
     periodTable -> setSelectionBehavior(QAbstractItemView::SelectRows);
     periodTable -> setAlternatingRowColors(true);
@@ -182,16 +216,44 @@ MainWindow::MainWindow(QWidget *parent):QMainWindow(parent), database("data/repo
 
     reportCountLabel = new QLabel("Prikazano izvjestaja: 0");
     mainLayout -> addWidget(reportCountLabel);
+
+    QLabel *periodSectionLabel = new QLabel("PREGLED PERIODA");
+
+    QFont periodSectionFont = periodSectionLabel -> font();
+    periodSectionFont.setPointSize(11);
+    periodSectionFont.setBold(true);
+    periodSectionLabel -> setFont(periodSectionFont);
+
+    mainLayout -> addWidget(periodSectionLabel);
+    mainLayout -> addLayout(periodControlLayout);
+
     mainLayout -> addWidget(periodSummaryLabel);
     mainLayout -> addWidget(periodTable);
 
     //Reminder panel
+    QFrame *reminderSeparator = new QFrame();
+    reminderSeparator -> setFrameShape(QFrame::HLine);
+    reminderSeparator -> setFrameShadow(QFrame::Sunken);
+
+    mainLayout -> addSpacing(10);
+    mainLayout -> addWidget(reminderSeparator);
+
+    QHBoxLayout *cbbhLayout = new QHBoxLayout();
+
     mainLayout -> addWidget(reminderTitleLabel);
     mainLayout -> addWidget(reminderDeadlineLabel);
     mainLayout -> addWidget(reminderStatusLabel);
     mainLayout -> addWidget(reminderMessageLabel);
-    mainLayout -> addWidget(cbbhReminderLabel);
-    mainLayout -> addWidget(cbbhEmailButton);
+
+    cbbhLayout -> addWidget(cbbhReminderLabel);
+    cbbhLayout -> addSpacing(20);
+    cbbhLayout -> addWidget(cbbhEmailButton);
+    cbbhLayout -> addStretch();
+
+    mainLayout -> addLayout(cbbhLayout);
+    mainLayout -> addStretch();
+
+    
 
 
     applyTheme();
@@ -506,6 +568,7 @@ void MainWindow::showPeriodOverview() {
 
     std::vector<ReportType>expectedTypes = reportCalendar.getExpectedReportTypes();
     periodTable -> setRowCount(expectedTypes.size());
+    periodTable -> setMinimumHeight(220);
 
     for(int i = 0; i < expectedTypes.size(); i++) {
 
@@ -763,22 +826,30 @@ void MainWindow::applyTheme(){
         themeButton -> setText("Dark");
 
         setStyleSheet(R"(
-            QMainWindow {
-                background-color: #f5f5f5;
+            QMainWindow, QScrollArea, QScrollArea > QWidget, QWidget {
+                background-color: #f8fafc;
             }
 
             QLabel {
-                color: #202020;
+                color: #1e293b;
             }
 
-            QLineEdit, QComboBox {
-                background-color: white;
-                color: #202020;
-                border: 1px solid #cccccc;
-                border-radius: 5px;
-                padding: 6px;
+            QLineEdit:placeholder {
+                color: #94a3b8;            
+            }
+
+            QLineEdit, QComboBox, QSpinBox {
+                background-color: #ffffff;
+                color: #1e293b;
+                border: 1px solid #cbd5e1;
+                border-radius: 7px;
+                padding: 7px;
                 selection-background-color: #3b82f6;
                 selection-color: white;
+            }
+
+            QLineEdit:focus, QComboBox:focus, QSpinBox:focus {
+                border: 1px solid #3b82f6;
             }
 
             QComboBox QAbstractItemView {
@@ -790,31 +861,40 @@ void MainWindow::applyTheme(){
 
             QPushButton {
                 background-color: #3b82f6;
-                color: white;
+                color: #ffffff;
                 border: none;
-                border-radius: 5px;
-                padding: 6px 12px;
+                border-radius: 7px;
+                padding: 8px 14px;
+                font-weight: bold;
             }
 
             QPushButton:hover {
                 background-color: #2563eb;
             }
 
+            QPushButton:pressed {
+                background-color: #1d4ed8;
+            }
+
             QTableWidget {
-                background-color: white;
-                alternate-background-color: #f2f2f2;
-                color: #202020;
-                gridline-color: #dddddd;
-                border: 1px solid #cccccc;
+                background-color: #ffffff;
+                alternate-background-color: #f8fafc;
+                color: #1e293b;
+                gridline-color: #e2e8f0;
+                border: 1px solid #cbd5e1;
+                border-radius: 6px;
                 selection-background-color: #3b82f6;
                 selection-color: white;
             }
 
             QHeaderView::section {
-                background-color: #e9e9e9;
-                color: #202020;
-                padding: 6px;
-                border: 1px solid #cccccc;
+                background-color: #f1f5f9;
+                color: #334155;
+                padding: 7px;
+                border: none;
+                border-right: 1px solid #e2e8f0;
+                border-bottom: 1px solid #cbd5e1;
+                font-weight: bold;
             }
         )");
     }
