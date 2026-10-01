@@ -4,6 +4,8 @@
 #include <QComboBox>
 #include <QSpinBox>
 #include <QLabel>
+#include <QDragEnterEvent>
+#include <QDropEvent>
 #include <vector>
 #include "../database/DatabaseManager.h"
 #include "../upload/UploadManager.h"
@@ -27,6 +29,10 @@ class MainWindow : public QMainWindow {
     public:
         MainWindow(QWidget *parent = nullptr);
 
+    protected:
+        void dragEnterEvent(QDragEnterEvent *event) override;
+        void dropEvent(QDropEvent *event) override; 
+
     private:
         QPushButton *addReportButton;
         QLineEdit *searchLineEdit;
@@ -47,6 +53,7 @@ class MainWindow : public QMainWindow {
         QLabel *reminderMessageLabel;
         QLabel *cbbhReminderLabel;
         QPushButton *cbbhEmailButton;
+        QLabel *dropHintLabel;
 
 
         DatabaseManager database;
@@ -61,6 +68,7 @@ class MainWindow : public QMainWindow {
         void displayReports(const std::vector<Report>&reports);
         void applyTheme();
         void addReport();
+        bool processReportFile(const QString &filePath);
         void showPeriodOverview();
         void updateReminderPanel();
         void openCbbhEmailForm();
