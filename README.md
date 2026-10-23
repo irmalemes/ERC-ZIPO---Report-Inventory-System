@@ -1,6 +1,8 @@
 # Report Inventory System
 
-Internship project for building a desktop application that manages recurring PIO/MIO, CBBH and Halcom reports.
+A desktop application developed during my professional internship at **ERC ZIPO d.o.o. Sarajevo**, using **C++, Qt, and SQLite** that manages recurring PIO/MIO, CBBH and Halcom reports.
+
+The application is **currently used within the company** to support internal report organization, document management, and recurring reporting workflows.
 
 ## Project goals
 - Upload Word/PDF reports
